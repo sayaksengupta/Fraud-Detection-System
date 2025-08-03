@@ -16,7 +16,7 @@ const cache = new NodeCache({ stdTTL: 3600 });
 const fraudDetector = new FraudDetector();
 const MAX_RETRIES = 3;
 const BASE_DELAY = 1000;
-const DLQ_RETRY_DELAY = 5 * 60 * 1000; // 5 minutes
+const DLQ_RETRY_DELAY = 5 * 60 * 1000;
 const activeTimeouts = new Set();
 
 const createTopicIfNotExists = async () => {
@@ -73,17 +73,17 @@ const processMessage = async (message, retryCount = 0, isDLQ = false) => {
         reasons,
         timestamp: transaction.timestamp
       });
-      await insertFlaggedTransaction(transaction, reasons);
+      insertFlaggedTransaction(transaction, reasons);
     } else {
       logger.info(`${isDLQ ? 'DLQ ' : ''}Transaction processed successfully`, { transactionId: transaction.transactionId });
     }
     
     cache.set(transaction.transactionId, true);
   } catch (error) {
-    logger.error(`${isDLQ ? 'DLQ ' : ''}Error processing message`, { error, retryCount, transactionId: message.value?.toString() });
+    logger.error(`${isDLQ ? 'DLQ ' : ''}Error processing message`, { error, retryCount, transaction: message.value?.toString() });
     if (retryCount < MAX_RETRIES && isRetryableError(error)) {
       const delay = isDLQ ? DLQ_RETRY_DELAY : BASE_DELAY * Math.pow(2, retryCount);
-      logger.info(`${isDLQ ? 'DLQ ' : ''}Scheduling retry`, { retryCount: retryCount + 1, delay, transactionId: message.value?.toString() });
+      logger.info(`${isDLQ ? 'DLQ ' : ''}Scheduling retry`, { retryCount: retryCount + 1, delay, transaction: message.value?.toString() });
       const timeoutId = setTimeout(() => {
         activeTimeouts.delete(timeoutId);
         processMessage(message, retryCount + 1, isDLQ);
@@ -92,7 +92,7 @@ const processMessage = async (message, retryCount = 0, isDLQ = false) => {
     } else {
       logger.error(`${isDLQ ? 'DLQ ' : ''}Max retries reached or non-retryable error, ${isDLQ ? 'logging to DB' : 'sending to DLQ'}`, { message: message.value?.toString() });
       if (isDLQ) {
-        await insertDLQTransaction(message.value?.toString(), error.message);
+        insertDLQTransaction(message.value?.toString(), error.message);
       } else {
         await sendToDLQ(message);
       }

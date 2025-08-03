@@ -1,6 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const fraudsRouter = require("./routes/frauds");
+const transactionsRouter = require("./routes/transactions");
 const { runConsumer, stopConsumer } = require("./kafka/consumer");
 const { closeDatabase } = require("./models/flaggedTransaction");
 const logger = require("./utils/logger");
@@ -9,6 +10,7 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 app.use("/frauds", fraudsRouter);
+app.use("/transactions", transactionsRouter);
 
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });
