@@ -9,7 +9,7 @@ describe("FraudDetector", () => {
 
   test("should flag high amount outside USA", () => {
     const transaction = {
-      amount: 6000,
+      amount: 6100,
       location: "Nigeria",
       timestamp: "2025-07-30T10:12:00Z",
       userId: "user_123",

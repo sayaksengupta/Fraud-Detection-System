@@ -5,12 +5,14 @@ const transactionsRouter = require("./routes/transactions");
 const { runConsumer, stopConsumer } = require("./kafka/consumer");
 const { closeDatabase } = require("./models/flaggedTransaction");
 const logger = require("./utils/logger");
+const routes = require("./routes/index");
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-app.use("/frauds", fraudsRouter);
-app.use("/transactions", transactionsRouter);
+app.use(express.json());
+
+app.use("/", routes);
 
 app.get("/health", (req, res) => {
   res.json({ status: "ok" });

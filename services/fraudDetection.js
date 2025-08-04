@@ -33,7 +33,7 @@ class FraudDetector {
   }
 
   detect(transaction) {
-    // Validate transaction first
+    // Validate transaction
     this.validateTransaction(transaction);
 
     const reasons = [];
