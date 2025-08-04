@@ -12,10 +12,6 @@ app.use(express.json());
 
 app.use("/", routes);
 
-app.get("/health", (req, res) => {
-  res.json({ status: "ok" });
-});
-
 const server = app.listen(port, () => {
   logger.info(`Server running on port ${port}`);
 });
